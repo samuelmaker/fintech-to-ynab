@@ -12,6 +12,11 @@ class ApplicationController < ActionController::API
   private
 
   def verify_token
-    render json: { error: :unauthorised }, status: 401 if ENV['URL_SECRET'].present? && ENV['URL_SECRET'] != params[:secret]
+    expected = ENV['URL_SECRET']
+    provided = params[:secret]
+    unless expected.present? && provided.is_a?(String) &&
+        ActiveSupport::SecurityUtils.secure_compare(expected, provided)
+      render json: { error: :unauthorised }, status: 401
+    end
   end
 end
